@@ -5,7 +5,9 @@ Gem::Specification.new do |spec|
   spec.summary     = "A very simple lightweight in-memory database"
   spec.description = "A very simple lightweight in-memory database"
   spec.authors     = ["abstractx1"]
-  spec.files       = ["lib/imdb.rb"]
+  spec.files       = Dir.glob("ext/**/*.{c,rb}") + ["lib/imdb.rb"]
+  spec.extensions << "ext/core/extconf.rb"
+
 
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "pry"
