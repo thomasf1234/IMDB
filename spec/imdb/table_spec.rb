@@ -424,6 +424,46 @@ module TableSpec
       end
     end
 
+    describe "#vacuum" do
+      let(:test_table) { TestTable.new("test_table") }
+
+      context 'empty' do
+
+      end
+
+      context 'no deleted rows' do
+
+      end
+
+      context 'deleted rows' do
+        it 'cleans up the no longer used rows and indexes' do
+          row_uuid1 = test_table.insert({'int_col' => 1, 'string_col' => 'Hi', 'unique_col' => 'unique_string', 'readonly_col' => 'private'})
+          row_uuid2 = test_table.insert({'int_col' => 2, 'string_col' => 'Hi2', 'unique_col' => 'unique_string2', 'readonly_col' => 'private2'})
+          row_uuid3 = test_table.insert({'int_col' => 3, 'string_col' => 'Hi3', 'unique_col' => 'unique_string3', 'readonly_col' => 'private3'})
+          row_uuid4 = test_table.insert({'int_col' => 4, 'string_col' => 'Hi4', 'unique_col' => 'unique_string4', 'readonly_col' => 'private4'})
+          row_uuid5 = test_table.insert({'int_col' => 5, 'string_col' => 'Hi5', 'unique_col' => 'unique_string5', 'readonly_col' => 'private5'})
+          row_uuid6 = test_table.insert({'int_col' => 6, 'string_col' => 'Hi6', 'unique_col' => 'unique_string6', 'readonly_col' => 'private6'})
+          row_uuid7 = test_table.insert({'int_col' => 7, 'string_col' => 'Hi7', 'unique_col' => 'unique_string7', 'readonly_col' => 'private7'})
+          row_uuid8 = test_table.insert({'int_col' => 8, 'string_col' => 'Hi8', 'unique_col' => 'unique_string8', 'readonly_col' => 'private8'})
+          test_table.delete(row_uuid1)
+          test_table.delete(row_uuid3)
+          test_table.delete(row_uuid4)
+          test_table.delete(row_uuid7)
+          test_table.vacuum
+
+          # expect(test_table.instance_variable_get(:@indexes)).to eq({'row_uuid' => {row_uuid2 => 0, row_uuid4 => 1},
+          #                                                            'unique_col' => {'unique_string2' => row_uuid2, 'unique_string4' => row_uuid4}})
+          expect(test_table.instance_variable_get(:@indexes)['row_uuid']).to eq({row_uuid2 => 0, row_uuid5 => 1, row_uuid6 => 2, row_uuid8 => 3})
+          expect(test_table.instance_variable_get(:@data)).to eq([2,'Hi2','unique_string2','private2',
+                                                                  5,'Hi5','unique_string5','private5',
+                                                                  6,'Hi6','unique_string6','private6',
+                                                                  8,'Hi8','unique_string8','private8'])
+          expect(test_table.instance_variable_get(:@current_row_index)).to eq(4)
+          expect(test_table.instance_variable_get(:@deleted_row_uuids).empty?).to eq(true)
+        end
+      end
+    end
+
     describe "p#get_range" do
       let(:test_table) { TestTable.new("test_table") }
 
@@ -437,3 +477,4 @@ module TableSpec
     end
   end
 end
+

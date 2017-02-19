@@ -178,6 +178,7 @@ module IMDB
       end
     end
 
+    #TODO : delete unique indexes
     def delete(row_uuid)
       lock do
         if @indexes['row_uuid'].has_key?(row_uuid)
@@ -192,6 +193,36 @@ module IMDB
         else
           raise IMDB::RowNotFound.new('row_uuid' => row_uuid)
         end
+      end
+    end
+
+    def delete_all
+      lock do
+        @deleted_row_uuids.merge(@indexes['row_uuid'])
+        @data.fill(nil)
+      end
+    end
+
+    #TODO : clean out unique indexes
+    def vacuum
+      lock do
+        ordered_row_uuids = @indexes['row_uuid'].sort_by {|row_uuid, row_index| row_index}
+
+        row_index_shift = 0
+        ordered_row_uuids.each do |row_uuid, row_index|
+          @indexes['row_uuid'][row_uuid] += row_index_shift
+
+          if @deleted_row_uuids.include?(row_uuid)
+            new_row_index = row_index + row_index_shift
+            @data[get_range(new_row_index)] = []
+            @indexes['row_uuid'].delete(row_uuid)
+
+            row_index_shift -= 1
+          end
+        end
+        @current_row_index += row_index_shift
+
+        @deleted_row_uuids.clear
       end
     end
 
