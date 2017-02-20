@@ -249,6 +249,32 @@ module TableSpec
       end
     end
 
+    describe "#all" do
+      let(:test_table) { TestTable.new("test_table") }
+
+      it 'retrieves all active rows' do
+        row_uuid1 = test_table.insert({'int_col' => 1, 'string_col' => 'Hi', 'unique_col' => 'unique_string', 'readonly_col' => 'private'})
+        row_uuid2 = test_table.insert({'int_col' => 2, 'string_col' => 'Hi2', 'unique_col' => 'unique_string2', 'readonly_col' => 'private2'})
+        row_uuid3 = test_table.insert({'int_col' => 3, 'string_col' => 'Hi3', 'unique_col' => 'unique_string3', 'readonly_col' => 'private3'})
+        row_uuid4 = test_table.insert({'int_col' => 4, 'string_col' => 'Hi4', 'unique_col' => 'unique_string4', 'readonly_col' => 'private4'})
+        row_uuid5 = test_table.insert({'int_col' => 5, 'string_col' => 'Hi5', 'unique_col' => 'unique_string5', 'readonly_col' => 'private5'})
+        row_uuid6 = test_table.insert({'int_col' => 6, 'string_col' => 'Hi6', 'unique_col' => 'unique_string6', 'readonly_col' => 'private6'})
+        row_uuid7 = test_table.insert({'int_col' => 7, 'string_col' => 'Hi7', 'unique_col' => 'unique_string7', 'readonly_col' => 'private7'})
+        row_uuid8 = test_table.insert({'int_col' => 8, 'string_col' => 'Hi8', 'unique_col' => 'unique_string8', 'readonly_col' => 'private8'})
+        test_table.delete(row_uuid1)
+        test_table.delete(row_uuid3)
+        test_table.delete(row_uuid4)
+        test_table.delete(row_uuid7)
+
+        expect(test_table.all).to eq([
+                                         {'int_col' => 2, 'string_col' => 'Hi2', 'unique_col' => 'unique_string2', 'readonly_col' => 'private2'},
+                                         {'int_col' => 5, 'string_col' => 'Hi5', 'unique_col' => 'unique_string5', 'readonly_col' => 'private5'},
+                                         {'int_col' => 6, 'string_col' => 'Hi6', 'unique_col' => 'unique_string6', 'readonly_col' => 'private6'},
+                                         {'int_col' => 8, 'string_col' => 'Hi8', 'unique_col' => 'unique_string8', 'readonly_col' => 'private8'}
+                                     ])
+      end
+    end
+
     describe "#find_by" do
       let(:test_table) { TestTable.new("test_table") }
 
@@ -376,6 +402,30 @@ module TableSpec
 
           expect(test_table.instance_variable_get(:@data)).to eq([])
         end
+      end
+    end
+
+    describe "#delete_all" do
+      let(:test_table) { TestTable.new("test_table") }
+
+      it 'marks all rows as deleted' do
+        row_uuid1 = test_table.insert({'int_col' => 1, 'string_col' => 'Hi', 'unique_col' => 'unique_string', 'readonly_col' => 'private'})
+        row_uuid2 = test_table.insert({'int_col' => 2, 'string_col' => 'Hi2', 'unique_col' => 'unique_string2', 'readonly_col' => 'private2'})
+        row_uuid3 = test_table.insert({'int_col' => 3, 'string_col' => 'Hi3', 'unique_col' => 'unique_string3', 'readonly_col' => 'private3'})
+
+        test_table.delete_all
+        [row_uuid1, row_uuid2, row_uuid3].each do |row_uuid|
+          begin
+            test_table.find(row_uuid)
+            fail("Should have thrown IMDB::RowDeleted")
+          rescue IMDB::RowDeleted => e
+            expect(e.row_uuid).to eq(row_uuid)
+          end
+        end
+
+        expect(test_table.instance_variable_get(:@data)).to eq([nil, nil, nil, nil,
+                                                                nil, nil, nil, nil,
+                                                                nil, nil, nil, nil])
       end
     end
 

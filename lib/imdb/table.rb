@@ -112,6 +112,22 @@ module IMDB
       end
     end
 
+    def all
+      lock do
+        active_row_uuids = Set.new(@indexes['row_uuid'].keys) - @deleted_row_uuids
+
+        active_row_uuids.map do |row_uuid|
+          row_index = @indexes['row_uuid'][row_uuid]
+
+          if row_index.nil?
+            raise IMDB::RowNotFound.new(row_uuid: row_uuid)
+          else
+            retrieve_row(row_index)
+          end
+        end
+      end
+    end
+
     #threadsafe
     def find_by(unique_column, value)
       lock do
@@ -198,7 +214,7 @@ module IMDB
 
     def delete_all
       lock do
-        @deleted_row_uuids.merge(@indexes['row_uuid'])
+        @deleted_row_uuids.merge(@indexes['row_uuid'].keys)
         @data.fill(nil)
       end
     end
