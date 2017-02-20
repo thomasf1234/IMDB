@@ -373,6 +373,14 @@ module TableSpec
 
         expect(test_table.instance_variable_get(:@data)).to eq([nil, nil, nil, nil,
                                                                 2,'Hi2','unique_string2','private2'])
+
+        expect(test_table.instance_variable_get(:@indexes)).to eq({
+                                                                      'row_uuid' => { row_uuid1 => 0, row_uuid2 => 1 },
+                                                                      'unique_col' => { 'unique_string2' => row_uuid2 }
+                                                                  })
+
+        expect(test_table.instance_variable_get(:@deleted_row_uuids)).to eq(Set.new([row_uuid1]))
+        expect(test_table.instance_variable_get(:@current_row_index)).to eq(2)
       end
 
       context 'row already deleted' do
@@ -426,6 +434,14 @@ module TableSpec
         expect(test_table.instance_variable_get(:@data)).to eq([nil, nil, nil, nil,
                                                                 nil, nil, nil, nil,
                                                                 nil, nil, nil, nil])
+
+        expect(test_table.instance_variable_get(:@indexes)).to eq({
+            'row_uuid' => { row_uuid1 => 0, row_uuid2 => 1, row_uuid3 => 2 },
+            'unique_col' => {}
+                                                                  })
+
+        expect(test_table.instance_variable_get(:@deleted_row_uuids)).to eq(Set.new([row_uuid1, row_uuid2, row_uuid3]))
+        expect(test_table.instance_variable_get(:@current_row_index)).to eq(3)
       end
     end
 
@@ -503,7 +519,11 @@ module TableSpec
 
           # expect(test_table.instance_variable_get(:@indexes)).to eq({'row_uuid' => {row_uuid2 => 0, row_uuid4 => 1},
           #                                                            'unique_col' => {'unique_string2' => row_uuid2, 'unique_string4' => row_uuid4}})
-          expect(test_table.instance_variable_get(:@indexes)['row_uuid']).to eq({row_uuid2 => 0, row_uuid5 => 1, row_uuid6 => 2, row_uuid8 => 3})
+          expect(test_table.instance_variable_get(:@indexes)).to eq({
+                                                                       'row_uuid' => { row_uuid2 => 0, row_uuid5 => 1, row_uuid6 => 2, row_uuid8 => 3 },
+                                                                       'unique_col' => { 'unique_string2' => row_uuid2, 'unique_string5' => row_uuid5,
+                                                                                         'unique_string6' => row_uuid6, 'unique_string8' => row_uuid8}
+                                                                   })
           expect(test_table.instance_variable_get(:@data)).to eq([2,'Hi2','unique_string2','private2',
                                                                   5,'Hi5','unique_string5','private5',
                                                                   6,'Hi6','unique_string6','private6',

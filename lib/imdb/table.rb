@@ -202,9 +202,13 @@ module IMDB
             raise IMDB::RowDeleted.new(row_uuid)
           else
             row_index = @indexes['row_uuid'][row_uuid]
-
+            row = retrieve_row(row_index)
             @deleted_row_uuids << row_uuid
+            unique_columns.each do |column|
+              @indexes[column].delete(row[column])
+            end
             @data[get_range(row_index)] = @deleted_row_const
+
           end
         else
           raise IMDB::RowNotFound.new('row_uuid' => row_uuid)
@@ -215,6 +219,9 @@ module IMDB
     def delete_all
       lock do
         @deleted_row_uuids.merge(@indexes['row_uuid'].keys)
+        unique_columns.each do |column|
+          @indexes[column].clear
+        end
         @data.fill(nil)
       end
     end
@@ -244,6 +251,10 @@ module IMDB
 
     def columns
       self.class.columns
+    end
+
+    def unique_columns
+      columns.select(&:unique?)
     end
 
     def empty?
