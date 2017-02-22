@@ -517,8 +517,6 @@ module TableSpec
           test_table.delete(row_uuid7)
           test_table.vacuum
 
-          # expect(test_table.instance_variable_get(:@indexes)).to eq({'row_uuid' => {row_uuid2 => 0, row_uuid4 => 1},
-          #                                                            'unique_col' => {'unique_string2' => row_uuid2, 'unique_string4' => row_uuid4}})
           expect(test_table.instance_variable_get(:@indexes)).to eq({
                                                                        'row_uuid' => { row_uuid2 => 0, row_uuid5 => 1, row_uuid6 => 2, row_uuid8 => 3 },
                                                                        'unique_col' => { 'unique_string2' => row_uuid2, 'unique_string5' => row_uuid5,
