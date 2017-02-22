@@ -1,5 +1,5 @@
 Gem::Specification.new do |spec|
-  spec.name        = 'IMDB'
+  spec.name        = 'imdb'
   spec.version     = '0.0.0'
   spec.date        = '2017-02-13'
   spec.summary     = "A very simple lightweight in-memory database"
